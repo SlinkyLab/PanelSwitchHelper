@@ -20,10 +20,7 @@ import com.effective.android.panel.device.DeviceRuntime
 import com.effective.android.panel.interfaces.ContentScrollMeasurer
 import com.effective.android.panel.interfaces.PanelHeightMeasurer
 import com.effective.android.panel.interfaces.ViewAssertion
-import com.effective.android.panel.interfaces.listener.OnEditFocusChangeListener
-import com.effective.android.panel.interfaces.listener.OnKeyboardStateListener
-import com.effective.android.panel.interfaces.listener.OnPanelChangeListener
-import com.effective.android.panel.interfaces.listener.OnViewClickListener
+import com.effective.android.panel.interfaces.listener.*
 import com.effective.android.panel.log.LogFormatter
 import com.effective.android.panel.utils.DisplayUtil
 import com.effective.android.panel.utils.DisplayUtil.getLocationOnScreen
@@ -100,6 +97,7 @@ class PanelSwitchLayout : LinearLayout, ViewAssertion {
         }
     }
 
+    var clickInterceptor: ClickInterceptor? = null
 
     @JvmOverloads
     constructor(context: Context?, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr) {
@@ -189,6 +187,11 @@ class PanelSwitchLayout : LinearLayout, ViewAssertion {
                         LogTracker.log("$TAG#initListener", "panelItem invalid click! preClickTime: $preClickTime currentClickTime: $currentTime")
                         return
                     }
+
+                    if (clickInterceptor?.intercept(v.id) == true) {
+                        return
+                    }
+
                     notifyViewClick(v)
                     val targetId = panelContainer.getPanelId(panelView)
                     if (panelId == targetId && panelView.isTriggerViewCanToggle() && panelView.isShowing()) {
@@ -704,4 +707,9 @@ class PanelSwitchLayout : LinearLayout, ViewAssertion {
         val TAG = PanelSwitchLayout::class.java.simpleName
         private var preClickTime: Long = 0
     }
+}
+
+
+interface ClickInterceptor {
+    fun intercept(viewId: Int): Boolean
 }
